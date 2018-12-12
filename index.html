@@ -1,0 +1,71 @@
+<!-- HTML header for doxygen 1.8.6 -->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=9" />
+    <meta name="generator" content="Doxygen 1.8.12" />
+    <title>Kusoapuri</title>
+    <script src="https://docs.opencv.org/3.4.1/opencv.js"></script>
+  </head>
+  <body>
+    <div>
+      <div class="inputoutput">
+        <img id="imageSrc" alt="No Image" />
+        <div class="caption">
+          imageSrc <input type="file" id="fileInput" name="file" />
+        </div>
+      </div>
+      <div class="inputoutput">
+        <canvas id="canvasOutput"></canvas>
+        <div class="caption">canvasOutput</div>
+      </div>
+    </div>
+    <script type="text/javascript">
+      let imgElement = document.getElementById('imageSrc');
+      let inputElement = document.getElementById('fileInput');
+      inputElement.addEventListener(
+        'change',
+        e => {
+          imgElement.src = URL.createObjectURL(e.target.files[0]);
+        },
+        false
+      );
+      imgElement.onload = function() {
+        let mat = cv.imread(imgElement);
+        let resized = resize(mat);
+        console.log(resized.size());
+        let gray = grayscale(resized);
+
+        cv.imshow('canvasOutput', gray);
+        mat.delete();
+        resized.delete();
+        gray.delete();
+      };
+      function onOpenCvReady() {
+        document.getElementById('status').innerHTML = 'OpenCV.js is ready.';
+      }
+
+      function grayscale(mat) {
+        let gray = new cv.Mat();
+        cv.cvtColor(mat, gray, 6);
+
+        return gray;
+      }
+
+      function resize(mat) {
+        const desiredSize = 256.0;
+        const size = mat.size();
+
+        const ratio = desiredSize / Math.min(size.width, size.height);
+        let rw = Math.round(size.width * ratio);
+        let rh = Math.round(size.height * ratio);
+        let newSize = new cv.Size(rw, rh);
+        let dst = new cv.Mat();
+
+        cv.resize(mat, dst, newSize);
+        return dst;
+      }
+    </script>
+  </body>
+</html>
