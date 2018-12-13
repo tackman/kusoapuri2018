@@ -9,7 +9,8 @@
     <script src="https://docs.opencv.org/3.4.1/opencv.js"></script>
   </head>
   <body>
-    <script src="https://cdn.jsdelivr.net/npm/onnxjs/dist/onnx.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs/dist/tf.min.js"></script>
+    <script src="index.js"></script>
     <div>
       <div class="inputoutput">
         <img id="imageSrc" alt="No Image" />
@@ -35,31 +36,22 @@
       imgElement.onload = function() {
         let mat = cv.imread(imgElement);
         let resized = resize(mat);
-        console.log(resized.size());
+        // console.log(resized.size());
         let gray = grayscale(resized);
         const size = gray.size();
 
         let fary = normalize(gray.data);
-        let t = new onnx.Tensor(fary, 'float32', [1, 256, 256]);
+        let t = tf.tensor4d(fary, [256, 256, 1, 1]);
 
-        const session = new onnx.InferenceSession();
-        console.log('begin loading');
-        session.loadModel('/nets/ep100.onnx').then(function(val) {
-          console.log('model load completed');
-          wondow.aloert('hoge');
-          session.run(t).then(
-            output => {
-              console.log('prediction done');
-              const outputTensor = output.values().next().value;
-              console.log(`model output tensor: ${outputTensor.data}.`);
-            },
-            err => {
-              console.log(err);
-            }
-          );
+        run(t.transpose()).then(pred => {
+          console.log('prediction done');
+          let img = float2mat(pred);
+          console.log(img);
+          cv.imshow('canvasOutput', img);
+
+          img.delete();
         });
 
-        cv.imshow('canvasOutput', gray);
         mat.delete();
         resized.delete();
         gray.delete();
@@ -68,9 +60,31 @@
         document.getElementById('status').innerHTML = 'OpenCV.js is ready.';
       }
 
+      function float2mat(x) {
+        let intArray = new Uint8Array(x.length);
+
+        let i = 0;
+        for (i = 0; i < x.length; ++i) {
+          intArray[i] = Math.round(x[i] * 255);
+        }
+
+        console.log(intArray);
+
+        let im = new cv.Mat(256, 256, 0);
+        console.log(im.data);
+
+        for (i = 0; i < 256 * 3 * 256 * 3; ++i) {
+          im.data[i] = intArray[i];
+        }
+
+        console.log('clone done');
+        console.log(im.data);
+        return im;
+      }
+
       function grayscale(mat) {
         let gray = new cv.Mat();
-        cv.cvtColor(mat, gray, 6);
+        cv.cvtColor(mat, gray, 6); // COLOR_BGR2GRAY
 
         return gray;
       }
