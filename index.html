@@ -9,6 +9,7 @@
     <script src="https://docs.opencv.org/3.4.1/opencv.js"></script>
   </head>
   <body>
+    <script src="https://cdn.jsdelivr.net/npm/onnxjs/dist/onnx.min.js"></script>
     <div>
       <div class="inputoutput">
         <img id="imageSrc" alt="No Image" />
@@ -36,6 +37,27 @@
         let resized = resize(mat);
         console.log(resized.size());
         let gray = grayscale(resized);
+        const size = gray.size();
+
+        let fary = normalize(gray.data);
+        let t = new onnx.Tensor(fary, 'float32', [1, 256, 256]);
+
+        const session = new onnx.InferenceSession();
+        console.log('begin loading');
+        session.loadModel('/nets/ep100.onnx').then(function(val) {
+          console.log('model load completed');
+          wondow.aloert('hoge');
+          session.run(t).then(
+            output => {
+              console.log('prediction done');
+              const outputTensor = output.values().next().value;
+              console.log(`model output tensor: ${outputTensor.data}.`);
+            },
+            err => {
+              console.log(err);
+            }
+          );
+        });
 
         cv.imshow('canvasOutput', gray);
         mat.delete();
@@ -51,6 +73,24 @@
         cv.cvtColor(mat, gray, 6);
 
         return gray;
+      }
+
+      function normalize(intArray) {
+        let floatArray = new Float32Array(256 * 256);
+
+        let i = 0;
+        for (i = 0; i < 256 * 256; ++i) {
+          floatArray[i] = intArray[i] / 256.0;
+        }
+
+        return floatArray;
+      }
+
+      function toFloat(mat) {
+        let fmat = new cv.Mat();
+        mat.convertTo(fmat, 5);
+
+        return fmat;
       }
 
       function resize(mat) {
