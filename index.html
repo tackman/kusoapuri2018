@@ -43,7 +43,7 @@
         let fary = normalize(gray.data);
         let t = tf.tensor4d(fary, [256, 256, 1, 1]);
 
-        run(t.transpose()).then(pred => {
+        run(t.transpose([3, 2, 0, 1])).then(pred => {
           console.log('prediction done');
           let img = float2mat(pred);
           console.log(img);
@@ -70,7 +70,7 @@
 
         console.log(intArray);
 
-        let im = new cv.Mat(256, 256, 0);
+        let im = new cv.Mat(256, 256, 1);
         console.log(im.data);
 
         for (i = 0; i < 256 * 3 * 256 * 3; ++i) {
