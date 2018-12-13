@@ -1,5 +1,6 @@
-async function run(x) {
-  const model = await tf.loadModel('nets/ep100.tfjs/model.json');
+async function run(x, modelPath) {
+
+  const model = await tf.loadModel(modelPath);
 
   let pred = model.predict(x);
   //  pred.print();

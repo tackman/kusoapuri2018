@@ -13,7 +13,7 @@
     <script src="index.js"></script>
     <div>
       <div class="inputoutput">
-        <img id="imageSrc" alt="No Image" />
+        <img id="imageSrc" alt="No Image" width="256px" height="256px" />
         <div class="caption">
           imageSrc <input type="file" id="fileInput" name="file" />
         </div>
@@ -22,14 +22,36 @@
         <canvas id="canvasOutput"></canvas>
         <div class="caption">canvasOutput</div>
       </div>
-    </div>
     <script type="text/javascript">
+      const modelBasePath = 'nets/tfjs/';
+      const modelFiles = [
+        'tfjs_ep0',
+        'tfjs_ep50',
+        'tfjs_ep100',
+        'tfjs_ep150',
+        'tfjs_ep200',
+        'tfjs_ep300',
+        'tfjs_ep500',
+        'tfjs_ep550',
+        'tfjs_ep600',
+        'tfjs_ep650',
+        'tfjs_ep700',
+        'tfjs_ep750',
+        'tfjs_ep800',
+        'tfjs_ep850',
+        'tfjs_ep900',
+        'tfjs_ep950'
+      ];
+
+      let modelIndex = 0;
+
       let imgElement = document.getElementById('imageSrc');
       let inputElement = document.getElementById('fileInput');
       inputElement.addEventListener(
         'change',
         e => {
           imgElement.src = URL.createObjectURL(e.target.files[0]);
+          modelIndex = 5;
         },
         false
       );
@@ -41,17 +63,19 @@
         const size = gray.size();
 
         let fary = normalize(gray.data);
-        let t = tf.tensor4d(fary, [256, 256, 1, 1]);
+        let t = tf.tensor4d(fary, [256, 256, 1, 1]).transpose([3, 2, 0, 1]);
 
-        run(t.transpose([3, 2, 0, 1])).then(pred => {
-          console.log('prediction done');
+        let path = modelBasePath + modelFiles[modelIndex] + '/model.json';
+        run(t, path).then(pred => {
+          console.log('prediction done ', modelIndex);
           let img = float2mat(pred);
           console.log(img);
+
           cv.imshow('canvasOutput', img);
 
           img.delete();
         });
-
+        
         mat.delete();
         resized.delete();
         gray.delete();
