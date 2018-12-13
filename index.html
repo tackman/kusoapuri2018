@@ -70,16 +70,28 @@
 
         console.log(intArray);
 
-        let im = new cv.Mat(256, 256, 1);
+        let im = new cv.Mat(256, 256, 0);
         console.log(im.data);
 
-        for (i = 0; i < 256 * 3 * 256 * 3; ++i) {
-          im.data[i] = intArray[i];
+        let color = new cv.Mat();
+        cv.cvtColor(im, color, 8); // COLOR_GRAY2BGR
+        console.log(color.data);
+
+        for (i = 0; i < 256 * 3 * 256 * 3; i += 3) {
+          color.data[i] = intArray[i];
+          color.data[i + 1] = intArray[i + 1];
+          color.data[i + 2] = intArray[i + 2];
         }
 
         console.log('clone done');
-        console.log(im.data);
-        return im;
+        console.log(color.data);
+
+        im.delete();
+
+        let rot = new cv.Mat();
+        cv.transpose(color, rot);
+
+        return rot;
       }
 
       function grayscale(mat) {

@@ -7,7 +7,7 @@ async function run(x) {
 
   let transposed = tf.transpose(pred);
   console.log(transposed.shape);
-  const d = await pred.data();
+  const d = await transposed.data();
   return d;
 }
 
