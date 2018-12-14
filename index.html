@@ -21,16 +21,9 @@
       <div class="inputoutput">
         <canvas id="canvasOutput"></canvas>
         <div class="caption">
-          <button onclick="onButtonClick(0)">1</button>
-          <button onclick="onButtonClick(1)">2</button>
-          <button onclick="onButtonClick(2)">3</button>
-          <button onclick="onButtonClick(3)">4</button>
-          <button onclick="onButtonClick(4)">5</button>
-          <button onclick="onButtonClick(5)">6</button>
-          <button onclick="onButtonClick(6)">7</button>
-          <button onclick="onButtonClick(7)">8</button>
-          <button onclick="onButtonClick(8)">9</button>
-          <button onclick="onButtonClick(9)">10</button>
+          <button id="nextButton" onclick="onButtonClick()" disabled>
+            Next
+          </button>
         </div>
       </div>
     </div>
@@ -59,9 +52,12 @@
 
       let imgElement = document.getElementById('imageSrc');
       let inputElement = document.getElementById('fileInput');
+      let nextButton = document.getElementById('nextButton');
 
-      function onButtonClick(index) {
-        modelIndex = index;
+      function onButtonClick() {
+        nextButton.disabled = true;
+
+        modelIndex++;
         generateImage();
       }
 
@@ -76,7 +72,6 @@
       function generateImage() {
         let mat = cv.imread(imgElement);
         let resized = resize(mat);
-        // console.log(resized.size());
         let gray = grayscale(resized);
         const size = gray.size();
 
@@ -87,11 +82,12 @@
         run(t, path).then(pred => {
           console.log('prediction done ', modelIndex);
           let img = float2mat(pred);
-          console.log(img);
 
           cv.imshow('canvasOutput', img);
 
           img.delete();
+
+          nextButton.disabled = false;
         });
 
         mat.delete();
@@ -113,23 +109,16 @@
           intArray[i] = Math.round(x[i] * 255);
         }
 
-        console.log(intArray);
-
         let im = new cv.Mat(256, 256, 0);
-        console.log(im.data);
 
         let color = new cv.Mat();
         cv.cvtColor(im, color, 8); // COLOR_GRAY2BGR
-        console.log(color.data);
 
         for (i = 0; i < 256 * 3 * 256 * 3; i += 3) {
           color.data[i] = intArray[i];
           color.data[i + 1] = intArray[i + 1];
           color.data[i + 2] = intArray[i + 2];
         }
-
-        console.log('clone done');
-        console.log(color.data);
 
         im.delete();
 
